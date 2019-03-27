@@ -15,15 +15,12 @@
 This module contains the Rubrik SDK Connect class.
 """
 
-import base64
 import requests
-import sys
 import os
 import logging
-from random import choice
-import time
 
 from .api import Api
+from .exceptions import RubrikConnectionException, InvalidAPIEndPointException, MissingCredentialException
 
 
 class Connect(Api):
@@ -53,7 +50,7 @@ class Connect(Api):
         if node_ip is None:
             node_ip = os.environ.get('rubrik_mosaic_node_ip')
             if node_ip is None:
-                sys.exit("Error: The Rubrik CDM Node IP has not been provided.")
+                raise MissingCredentialException("The Rubrik Mosaic Node IP has not been provided.")
             else:
                 self.node_ip = node_ip
         else:
@@ -71,7 +68,7 @@ class Connect(Api):
         if username is None:
             username = os.environ.get('rubrik_mosaic_username')
             if username is None:
-                sys.exit("Error: The Rubrik Mosaic Username has not been provided.")
+                raise MissingCredentialException("The Rubrik Mosaic Username has not been provided.")
             else:
                 self.username = username
                 self.log("Username: {}".format(self.username))
@@ -82,7 +79,7 @@ class Connect(Api):
         if password is None:
             password = os.environ.get('rubrik_mosaic_password')
             if password is None:
-                sys.exit("Error: The Rubrik Mosaic Password provided.")
+                raise MissingCredentialException("The Rubrik Mosaic Password has not been provided.")
             else:
                 self.password = password
                 self.log("Password: *******\n")
@@ -118,20 +115,21 @@ class Connect(Api):
         try:
             api_request = requests.post(request_url, verify=False, data=config, timeout=30)
         except requests.exceptions.ConnectTimeout:
-            sys.exit("Error: Unable to establish a connection to the Rubrik cluster.")
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.") from None
         except requests.exceptions.ConnectionError:
-            sys.exit("Error: Unable to establish a connection to the Rubrik cluster.")
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.") from None
         except requests.exceptions.ReadTimeout:
-            sys.exit("Error: The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.")
+            raise RubrikConnectionException(
+                "The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.") from None
         except requests.exceptions.RequestException as error:
-            # If "error_message" has be defined sys.exit that message else
-            # sys.exit the request exception error
+            # If "error_message" has be defined raise an exception with that message else
+            # raise an exception with the request exception error
             try:
                 error_message
             except NameError:
-                sys.exit(error)
+                raise RubrikConnectionException(error) from None
             else:
-                sys.exit('Error: ' + error_message)
+                raise RubrikConnectionException(error_messageer)
 
         api_response = api_request.json()
 
@@ -154,7 +152,8 @@ class Connect(Api):
 
             api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /login).
         """
-
         # Validate the API Endpoint Syntax
         if not isinstance(api_endpoint, str):
-            sys.exit("Error: The API Endpoint must be a string.")
+            raise InvalidAPIEndPointException("The API Endpoint must be a string.")
+        elif api_endpoint[0] != "/":
+            raise InvalidAPIEndPointException("The API Endpoint must begin with '/'. (ex: /adduser)")

@@ -17,13 +17,14 @@ This module contains the Rubrik SDK API class.
 
 import requests
 import json
-import sys
 import time
 try:
     from urllib import quote  # Python 2.X
 except ImportError:
     from urllib.parse import quote  # Python 3+
 from random import choice
+
+from .exceptions import RubrikConnectionException
 
 
 class Api():
@@ -66,9 +67,11 @@ class Api():
                 api_request = requests.get(request_url, verify=False, headers=header, timeout=timeout)
 
             else:
-                config = json.dumps(config)
+                # config = json.dumps(config)
                 self.log('POST {}'.format(request_url))
                 self.log('Config {}'.format(config))
+
+                self.log(type(config))
 
                 api_request = requests.post(request_url, verify=False, headers=header, json=config, timeout=timeout)
 
@@ -84,20 +87,21 @@ class Api():
             except BaseException:
                 api_request.raise_for_status()
         except requests.exceptions.ConnectTimeout:
-            sys.exit("Error: Unable to establish a connection to the Rubrik cluster.")
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.") from None
         except requests.exceptions.ConnectionError:
-            sys.exit("Error: Unable to establish a connection to the Rubrik cluster.")
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.") from None
         except requests.exceptions.ReadTimeout:
-            sys.exit("Error: The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.")
+            raise RubrikConnectionException(
+                "The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.") from None
         except requests.exceptions.RequestException as error:
-            # If "error_message" has be defined sys.exit that message else
-            # sys.exit the request exception error
+            # If "error_message" has be defined raise an exception for that message else
+            # raise an exception for the request exception error
             try:
                 error_message
             except NameError:
-                sys.exit(error)
+                raise RubrikConnectionException(error) from None
             else:
-                sys.exit('Error: ' + error_message)
+                raise RubrikConnectionException(error_messageer)
         else:
             try:
                 return api_request.json()
