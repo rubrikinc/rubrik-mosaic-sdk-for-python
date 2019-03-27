@@ -122,49 +122,13 @@ class Connect(_CLUSTER, _DATA_MANAGEMENT, _PHYSICAL, _CLOUD):
             dict -- The authorization header that utilizes Basic authentication.
         """
 
-        if self.api_token is None:
-            self.log("Creating the authorization header using the provided username and password.")
-
-            credentials = '{}:{}'.format(self.username, self.password)
-
-            # Encode the Username:Password as base64
-            authorization = base64.b64encode(credentials.encode())
-            # Convert to String for API Call
-            authorization = authorization.decode()
-
-            authorization_header = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': 'Basic ' + authorization,
-                'User-Agent': 'Rubrik Python SDK v1.0.13'
-            }
-
-        else:
-
-            self.log("Creating the authorization header using the provided API Token.")
-            authorization_header = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': 'Bearer ' + self.api_token,
-                'User-Agent': 'Rubrik Python SDK v1.0.13'
-            }
-
-        return authorization_header
-
-    @staticmethod
-    def _header():
-        """Internal method used to create the a header without authorization used in the API calls.
-
-        Returns:
-            dict -- The header that does not include any authorization.
-        """
-
-        header = {
+        authorization_header = {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            "x-access-token": data[self.api_token],
+
         }
 
-        return header
+        return authorization_header
 
     @staticmethod
     def _api_validation(api_version, api_endpoint):
