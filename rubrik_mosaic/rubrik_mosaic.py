@@ -26,14 +26,7 @@ import time
 from .api import Api
 
 
-_CLUSTER = Cluster
-_DATA_MANAGEMENT = Data_Management
-_PHYSICAL = Physical
-_API = Api
-_CLOUD = Cloud
-
-
-class Connect(_CLUSTER, _DATA_MANAGEMENT, _PHYSICAL, _CLOUD):
+class Connect(Api):
     """This class acts as the base class for the Rubrik SDK and serves as the main interaction point
     for its end users. It also contains various helper functions used throughout the SDK.
 
@@ -43,14 +36,14 @@ class Connect(_CLUSTER, _DATA_MANAGEMENT, _PHYSICAL, _CLOUD):
         _PHYSICAL {class} - This class contains methods related to the managment of the Physical objects in the Rubrik Cluster.
     """
 
-    def __init__(self, node_ip=None, username=None, password=None, api_token=None, enable_logging=False):
+    def __init__(self, node_ip=None, username=None, password=None, port="9090", enable_logging=False):
         """Constructor for the Connect class which is used to initialize the class variables.
 
         Keyword Arguments:
-            node_ip {str} -- The Hostname or IP Address of a node in the Rubrik cluster you wish to connect to. If a value is not provided we will check for a `rubrik_cdm_node_ip` environment variable. (default: {None})
-            username {str} -- The Username you wish to use to connect to the Rubrik cluster. If a value is not provided we will check for a `rubrik_cdm_username` environment variable. (default: {None})
-            password {str} -- The Password you wish to use to connect to the Rubrik cluster. If a value is not provided we will check for a `rubrik_cdm_password` environment variable. (default: {None})
-            api_token {str} -- The API Token you wish to use to connect to the Rubrik cluster. If populated, the `username` and `password` fields will be ignored. If a value is not provided we will check for a `rubrik_cdm_token` environment variable.  (default: {None})
+            node_ip {str} -- The Hostname or IP Address of a node in the Rubrik Mosaic cluster you wish to connect to. If a value is not provided we will check for a `rubrik_mosaic_node_ip` environment variable. (default: {None})
+            port {str} -- The Port used to connect to the Rubrik Mosaic cluster. If a value is not provided we will check for a `rubrik_mosaic_port` environment variable. (default: {9090})
+            username {str} -- The Username you wish to use to connect to the Rubrik Mosaic cluster. If a value is not provided we will check for a `rubrik_mosaic_username` environment variable. (default: {None})
+            password {str} -- The Password you wish to use to connect to the Rubrik Mosaic cluster. If a value is not provided we will check for a `rubrik_mosaic_password` environment variable. (default: {None})
             enable_logging {bool} -- Flag to determine if logging will be enabled for the SDK. (default: {False})
         """
 
@@ -58,7 +51,7 @@ class Connect(_CLUSTER, _DATA_MANAGEMENT, _PHYSICAL, _CLOUD):
             logging.getLogger().setLevel(logging.DEBUG)
 
         if node_ip is None:
-            node_ip = os.environ.get('rubrik_cdm_node_ip')
+            node_ip = os.environ.get('rubrik_mosaic_node_ip')
             if node_ip is None:
                 sys.exit("Error: The Rubrik CDM Node IP has not been provided.")
             else:
@@ -68,42 +61,34 @@ class Connect(_CLUSTER, _DATA_MANAGEMENT, _PHYSICAL, _CLOUD):
 
         self.log("Node IP: {}".format(self.node_ip))
 
-        # If the api_token has not been provided check for the env variable and then
-        # check for the username and password fields
-        if api_token is None:
-            api_token = os.environ.get('rubrik_cdm_token')
-            if api_token is None:
+        self.port = port
+        port = os.environ.get('rubrik_mosaic_port')
+        if port is not None:
+            self.port = port
 
-                self.api_token = None
+        self.log("Node Port: {}".format(self.port))
 
-                if username is None:
-                    username = os.environ.get('rubrik_cdm_username')
-                    if username is None:
-                        sys.exit("Error: The Rubrik CDM Username or an API Token has not been provided.")
-                    else:
-                        self.username = username
-                        self.log("Username: {}".format(self.username))
-                else:
-                    self.username = username
-                    self.log("Username: {}".format(self.username))
-
-                if password is None:
-                    password = os.environ.get('rubrik_cdm_password')
-                    if password is None:
-                        sys.exit("Error: The Rubrik CDM Password or an API Token has not been provided.")
-                    else:
-                        self.password = password
-                        self.log("Password: *******\n")
-                else:
-                    self.password = password
-                    self.log("Password: *******\n")
-
+        if username is None:
+            username = os.environ.get('rubrik_mosaic_username')
+            if username is None:
+                sys.exit("Error: The Rubrik Mosaic Username has not been provided.")
             else:
-                self.api_token = api_token
-                self.log("API Token: *******\n")
+                self.username = username
+                self.log("Username: {}".format(self.username))
         else:
-            self.api_token = api_token
-            self.log("API Token: *******\n")
+            self.username = username
+            self.log("Username: {}".format(self.username))
+
+        if password is None:
+            password = os.environ.get('rubrik_mosaic_password')
+            if password is None:
+                sys.exit("Error: The Rubrik Mosaic Password provided.")
+            else:
+                self.password = password
+                self.log("Password: *******\n")
+        else:
+            self.password = password
+            self.log("Password: *******\n")
 
     @staticmethod
     def log(log_message):
@@ -122,36 +107,54 @@ class Connect(_CLUSTER, _DATA_MANAGEMENT, _PHYSICAL, _CLOUD):
             dict -- The authorization header that utilizes Basic authentication.
         """
 
+        config = {}
+        config["username"] = self.username
+        config["password"] = self.password
+
+        request_url = "https://{}:{}/datos/login".format(self.node_ip, self.port)
+
+        self.log("Generating API Token")
+
+        try:
+            api_request = requests.post(request_url, verify=False, data=config, timeout=30)
+        except requests.exceptions.ConnectTimeout:
+            sys.exit("Error: Unable to establish a connection to the Rubrik cluster.")
+        except requests.exceptions.ConnectionError:
+            sys.exit("Error: Unable to establish a connection to the Rubrik cluster.")
+        except requests.exceptions.ReadTimeout:
+            sys.exit("Error: The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.")
+        except requests.exceptions.RequestException as error:
+            # If "error_message" has be defined sys.exit that message else
+            # sys.exit the request exception error
+            try:
+                error_message
+            except NameError:
+                sys.exit(error)
+            else:
+                sys.exit('Error: ' + error_message)
+
+        api_response = api_request.json()
+
+        api_token = api_response["data"]["token"]
+
+        self.log("API Token: {}".format(api_token))
+
         authorization_header = {
             'Content-Type': 'application/json',
-            "x-access-token": data[self.api_token],
-
+            "x-access-token": api_token,
         }
 
         return authorization_header
 
     @staticmethod
-    def _api_validation(api_version, api_endpoint):
+    def _api_validation(api_endpoint):
         """Internal method used to validate the API Version and API Endpoint provided by the end user
 
         Arguments:
-            api_version {str} -- The version of the Rubrik CDM API to call. (choices: {v1, v2, internal})
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /cluster/me).
+
+            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /login).
         """
-
-        valid_api_versions = ['v1', 'v2', 'internal']
-
-        # Validate the API Version
-        if api_version not in valid_api_versions:
-            sys.exit(
-                "Error: Enter a valid API version {}.".format(valid_api_versions))
 
         # Validate the API Endpoint Syntax
         if not isinstance(api_endpoint, str):
             sys.exit("Error: The API Endpoint must be a string.")
-        elif api_endpoint[0] != "/":
-            sys.exit(
-                "Error: The API Endpoint should begin with '/'. (ex: /cluster/me)")
-        elif api_endpoint[-1] == "/":
-            sys.exit(
-                "Error: The API Endpoint should not end with '/'. (ex. /cluster/me)")

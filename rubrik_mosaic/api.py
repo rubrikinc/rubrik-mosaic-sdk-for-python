@@ -32,82 +32,45 @@ class Api():
     def __init__(self, node_ip):
         super().__init__(node_ip)
 
-    def _common_api(self, call_type, api_version, api_endpoint, config=None,
-                    job_status_url=None, timeout=15, authentication=True, params=None):
+    def _common_api(self, call_type, api_endpoint, config=None, timeout=15, params=None):
         """Internal method that consolidates the base API functions.
 
         Arguments:
-            call_type {str} -- The HTTP Method for the type of RESTful API call being made. (choices: {'GET', 'POST', 'PATCH', 'DELETE', and 'JOB_STATUS'.})
-            api_version {str} -- The version of the Rubrik CDM API to call. (choices: {v1, v2, internal})
+            call_type {str} -- The HTTP Method for the type of RESTful API call being made. (choices: {'GET', 'POST', 'TOKEN_GENERATE'.})
             api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /cluster/me).
 
         Keyword Arguments:
             params {dict} -- An optional dict containing variables in a key:value format to send with `GET` & `DELETE` API calls (default: {None})
-            config {dict} -- The specified data to send with `POST` and `PATCH` API calls. (default: {None})
-            job_status_url {str} -- The job status URL provided by a previous API call. (default: {None})
             timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
-            authentication {bool} -- Flag that specifies whether or not to utilize authentication when making the API call. (default: {True})
 
         Returns:
             dict -- The full API call response for the provided endpoint.
         """
-        if call_type != 'JOB_STATUS':
-            self._api_validation(api_version, api_endpoint)
 
-        # Determine if authentication should be sent as part of the API Header
-        if authentication:
-            header = self._authorization_header()
-        elif authentication is False:
-            header = self._header()
-        else:
-            sys.exit('Error: "authentication" must be either True or False')
+        self._api_validation(api_endpoint)
+
+        header = self._authorization_header()
+
+        request_url = "https://{}:{}/datos{}".format(self.node_ip, self.port, api_endpoint)
 
         try:
             # Determine which call type is being used and then set the relevant
             # variables for that call type
             if call_type == 'GET':
-                request_url = "https://{}/api/{}{}".format(self.node_ip, api_version, api_endpoint)
+
                 if params is not None:
                     request_url = request_url + "?" + '&'.join("{}={}".format(key, val)
                                                                for (key, val) in params.items())
                 request_url = quote(request_url, '://?=&')
                 self.log('GET {}'.format(request_url))
-                api_request = requests.get(
-                    request_url, verify=False, headers=header, timeout=timeout)
-            elif call_type == 'POST':
-                config = json.dumps(config)
-                request_url = "https://{}/api/{}{}".format(
-                    self.node_ip, api_version, api_endpoint)
-                self.log('POST {}'.format(request_url))
-                self.log('Config: {}'.format(config))
-                api_request = requests.post(
-                    request_url,
-                    verify=False,
-                    headers=header,
-                    data=config,
-                    timeout=timeout)
-            elif call_type == 'PATCH':
-                config = json.dumps(config)
-                request_url = "https://{}/api/{}{}".format(
-                    self.node_ip, api_version, api_endpoint)
-                self.log('PATCH {}'.format(request_url))
-                self.log('Config: {}'.format(config))
-                api_request = requests.patch(request_url, verify=False, headers=header, data=config, timeout=timeout)
-            elif call_type == 'DELETE':
-                request_url = "https://{}/api/{}{}".format(
-                    self.node_ip, api_version, api_endpoint)
-                if params is not None:
-                    request_url = request_url + "?" + '&'.join("{}={}".format(key, val)
-                                                               for (key, val) in params.items())
-                self.log('DELETE {}'.format(request_url))
-                api_request = requests.delete(
-                    request_url, verify=False, headers=header, timeout=timeout)
-            elif call_type == 'JOB_STATUS':
-                self.log('JOB STATUS for {}'.format(job_status_url))
-                api_request = requests.get(job_status_url, verify=False, headers=header, timeout=timeout)
+                api_request = requests.get(request_url, verify=False, headers=header, timeout=timeout)
+
             else:
-                sys.exit('Error: the _common_api() call_type must be one of the following: {}'.format(
-                    ['GET', 'POST', 'PATCH', 'DELETE', 'JOB_STATUS']))
+                config = json.dumps(config)
+                self.log('POST {}'.format(request_url))
+                self.log('Config {}'.format(config))
+
+                api_request = requests.post(request_url, verify=False, headers=header, json=config, timeout=timeout)
 
             self.log(str(api_request) + "\n")
             try:
@@ -141,174 +104,33 @@ class Api():
             except BaseException:
                 return {'status_code': api_request.status_code}
 
-    def get(self, api_version, api_endpoint, timeout=15,
-            authentication=True, params=None):
+    def get(self, api_endpoint, timeout=15, params=None):
         """Send a GET request to the provided Rubrik API endpoint.
 
         Arguments:
-            api_version {str} -- The version of the Rubrik CDM API to call. (choices: {v1, v2, internal})
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /cluster/me).
+            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /listjobs).
 
         Keyword Arguments:
             params {dict} -- An optional dict containing variables in a key:value format to send with `GET` & `DELETE` API calls (default: {None})
             timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
-            authentication {bool} -- Flag that specifies whether or not to utilize authentication when making the API call. (default: {True})
 
         Returns:
             dict -- The response body of the API call.
         """
 
-        return self._common_api(
-            'GET',
-            api_version,
-            api_endpoint,
-            config=None,
-            job_status_url=None,
-            timeout=timeout,
-            authentication=authentication,
-            params=params)
+        return self._common_api('GET', api_endpoint, config=None, timeout=timeout, params=params)
 
-    def post(self, api_version, api_endpoint, config,
-             timeout=15, authentication=True):
+    def post(self, api_endpoint, config, timeout=15):
         """Send a POST request to the provided Rubrik API endpoint.
 
         Arguments:
-            api_version {str} -- The version of the Rubrik CDM API to call. (choices: {v1, v2, internal})
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /cluster/me).
-            config {dict} -- The specified data to send with the API call.
+            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /listjobs).
 
         Keyword Arguments:
             timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
-            authentication {bool} -- Flag that specifies whether or not to utilize authentication when making the API call. (default: {True})
 
         Returns:
             dict -- The response body of the API call.
         """
 
-        return self._common_api(
-            'POST',
-            api_version,
-            api_endpoint,
-            config=config,
-            job_status_url=None,
-            timeout=timeout,
-            authentication=authentication)
-
-    def patch(self, api_version, api_endpoint, config,
-              timeout=15, authentication=True):
-        """Send a PATCH request to the provided Rubrik API endpoint.
-
-        Arguments:
-            api_version {str} -- The version of the Rubrik CDM API to call. (choices: {v1, v2, internal})
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /cluster/me).
-            config {dict} -- The specified data to send with the API call.
-
-        Keyword Arguments:
-            timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
-            authentication {bool} -- Flag that specifies whether or not to utilize authentication when making the API call. (default: {True})
-
-        Returns:
-            dict -- The response body of the API call.
-        """
-
-        return self._common_api(
-            'PATCH',
-            api_version,
-            api_endpoint,
-            config=config,
-            job_status_url=None,
-            timeout=timeout,
-            authentication=authentication)
-
-    def delete(self, api_version, api_endpoint, timeout=15,
-               authentication=True, params=None):
-        """Send a DELETE request to the provided Rubrik API endpoint.
-
-        Arguments:
-            api_version {str} -- The version of the Rubrik CDM API to call. (choices: {v1, v2, internal})
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /cluster/me).
-
-        Keyword Arguments:
-            params {dict} -- An optional dict containing variables in a key:value format to send with `GET` & `DELETE` API calls (default: {None})
-            timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
-            authentication {bool} -- Flag that specifies whether or not to utilize authentication when making the API call. (default: {True})
-
-        Returns:
-            dict -- The response body of the API call.
-        """
-
-        return self._common_api(
-            'DELETE',
-            api_version,
-            api_endpoint,
-            config=None,
-            job_status_url=None,
-            timeout=timeout,
-            authentication=authentication,
-            params=params)
-
-    def job_status(self, url, wait_for_completion=True, timeout=15):
-        """Certain Rubrik operations (on-demand snapshots, live mounts, etc.) may not complete instantaneously. In those cases we have
-        the ability to monitor the status of the job through a job status url provided in the actions API response body. This function will
-        perform a GET operation on the provided url and return the jobs status.
-
-        Arguments:
-            url {str} -- The job status URL provided by a previous API call.
-
-        Keyword Arguments:
-            wait_for_completion {bool} -- Flag that determines if the method should wait for the job to complete before exiting. (default: {True})
-            timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
-
-
-        Returns:
-            dict -- The response body of the API call.
-        """
-
-        if not isinstance(wait_for_completion, bool):
-            sys.exit(
-                'Error: The job_status() wait_for_completion argument must be True or False.')
-
-        if wait_for_completion:
-            self.log('Job Status: Waiting for the job to complete.')
-            api_call = self._common_api(
-                'JOB_STATUS',
-                api_version=None,
-                api_endpoint=None,
-                config=None,
-                job_status_url=url,
-                timeout=timeout)
-
-            while True:
-
-                api_call = self._common_api(
-                    'JOB_STATUS',
-                    api_version=None,
-                    api_endpoint=None,
-                    config=None,
-                    job_status_url=url,
-                    timeout=timeout)
-
-                job_status = api_call['status']
-
-                if job_status == "SUCCEEDED":
-                    self.log('Job Progress 100%\n')
-                    job_status = api_call['status']
-                    break
-                elif job_status == "QUEUED" or "RUNNING":
-                    self.log('Job Progress {}%\n'.format(api_call['progress']))
-                    job_status = api_call['status']
-                    time.sleep(10)
-                    continue
-                else:
-                    sys.exit('Error: {}'.format(str(api_call)))
-
-        else:
-            api_call = self._common_api(
-                'JOB_STATUS',
-                api_version=None,
-                api_endpoint=None,
-                config=None,
-                job_status_url=url,
-                timeout=timeout)
-
-        return api_call
+        return self._common_api('POST', api_endpoint, config, timeout=timeout)

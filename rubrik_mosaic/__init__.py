@@ -1,6 +1,6 @@
 "rubrik: A Python package for interacting with the Rubrik CDM API."
 
-from .rubrik_cdm import Connect
+from .rubrik_mosaic import Connect
 
 import logging
 
