@@ -2,6 +2,19 @@
 
 ## :hammer: Installation
 
+`Install from source`
+
+
+
+$ git clone https://github.com/rubrik-devops/rubrik-sdk-for-python
+$ cd rubrik-sdk-for-python
+$ virtualenv .
+$ python setup.py install
+
+_Note: the `virtualenv .` step is optional but recommended for development work._
+
+
+
 ## :mag: Example
 
 ## :blue_book: Documentation
