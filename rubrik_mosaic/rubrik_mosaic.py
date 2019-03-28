@@ -113,21 +113,21 @@ class Connect(Api):
         self.log("Generating API Token")
 
         try:
-            api_request = requests.post(request_url, verify=False, data=config, timeout=30)
+            api_request = requests.post(request_url, verify=False, data=config, timeout=1)
         except requests.exceptions.ConnectTimeout:
-            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.") from None
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.")
         except requests.exceptions.ConnectionError:
-            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.") from None
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.")
         except requests.exceptions.ReadTimeout:
             raise RubrikConnectionException(
-                "The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.") from None
+                "The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.")
         except requests.exceptions.RequestException as error:
             # If "error_message" has be defined raise an exception with that message else
             # raise an exception with the request exception error
             try:
                 error_message
             except NameError:
-                raise RubrikConnectionException(error) from None
+                raise RubrikConnectionException(error)
             else:
                 raise RubrikConnectionException(error_messageer)
 
