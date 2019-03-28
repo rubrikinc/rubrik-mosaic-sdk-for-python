@@ -113,7 +113,7 @@ class Connect(Api):
         self.log("Generating API Token")
 
         try:
-            api_request = requests.post(request_url, verify=False, data=config, timeout=1)
+            api_request = requests.post(request_url, verify=False, data=config, timeout=30)
         except requests.exceptions.ConnectTimeout:
             raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.")
         except requests.exceptions.ConnectionError:
