@@ -8,7 +8,9 @@ class RubrikException(Exception):
 
 
 class RubrikConnectionException(RubrikException):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__suppress_context__ = True
 
 
 class InvalidAPIEndPointException(RubrikException):
