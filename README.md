@@ -1,4 +1,9 @@
-# rubrik-mosaic-sdk-for-python
+# Rubrik Mosaic SDK for Python
+
+## :exclamation: Alpha Release
+
+* This SDK is currently still an Alpha release with limited support and testing. We currently only support Python v3 or greater.
+
 
 ## :hammer: Installation
 
