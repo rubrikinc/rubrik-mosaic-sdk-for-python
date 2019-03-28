@@ -8,6 +8,7 @@ class RubrikException(Exception):
 
 
 class RubrikConnectionException(RubrikException):
+    pass
 
 
 class InvalidAPIEndPointException(RubrikException):
