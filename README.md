@@ -2,13 +2,11 @@
 
 ## :exclamation: Alpha Release
 
-* This SDK is currently still an Alpha release with limited support and testing. We currently only support Python v3 or greater.
-
+This SDK is currently still an Alpha release with limited support and testing. We currently only support Python v3 or greater.
 
 ## :hammer: Installation
 
 `Install from source`
-
 
 ```
 $ git clone https://github.com/rubrik-devops/rubrik-sdk-for-python
@@ -18,8 +16,6 @@ $ python setup.py install
 ```
 
 _Note: the `virtualenv .` step is optional but recommended for development work._
-
-
 
 ## :mag: Example
 
