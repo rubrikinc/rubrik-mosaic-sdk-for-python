@@ -21,9 +21,10 @@ import logging
 
 from .api import Api
 from .exceptions import RubrikConnectionException, InvalidAPIEndPointException, MissingCredentialException
+from .reporting import Reporting
 
 
-class Connect(Api):
+class Connect(Reporting):
     """This class acts as the base class for the Rubrik SDK and serves as the main interaction point
     for its end users. It also contains various helper functions used throughout the SDK.
 
