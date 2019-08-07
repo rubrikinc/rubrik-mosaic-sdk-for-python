@@ -12,7 +12,7 @@
 # limitations under the License.
 
 """
-This module contains the Rubrik SDK Connect class.
+This module contains the Rubrik Mosaic SDK Connect class.
 """
 
 import requests
@@ -23,15 +23,15 @@ from .api import Api
 from .exceptions import RubrikConnectionException, InvalidAPIEndPointException, MissingCredentialException
 from .reporting import Reporting
 
+_REPORTING = Reporting
+_API = Api
 
 class Connect(Reporting):
-    """This class acts as the base class for the Rubrik SDK and serves as the main interaction point
+    """This class acts as the base class for the Rubrik Mosaic SDK and serves as the main interaction point
     for its end users. It also contains various helper functions used throughout the SDK.
 
     Arguments:
-        _CLUSTER {class} -- This class contains methods related to the managment of the Rubrik Cluster itself.
-        _DATA_MANAGEMENT {class} - This class contains methods related to backup and restore operations for the various objects managed by the Rubrik Cluster.
-        _PHYSICAL {class} - This class contains methods related to the managment of the Physical objects in the Rubrik Cluster.
+        _REPORTING {class} - This class contains methods related to reporting on the operations of the Rubrik Mosaic cluster.
     """
 
     def __init__(self, node_ip=None, username=None, password=None, port="9090", enable_logging=False):
@@ -102,7 +102,7 @@ class Connect(Reporting):
         """Internal method used to create the authorization header used in the API calls.
 
         Returns:
-            dict -- The authorization header that utilizes Basic authentication.
+            dict -- The authorization header that utilizes token-based authentication.
         """
 
         config = {}
@@ -116,12 +116,12 @@ class Connect(Reporting):
         try:
             api_request = requests.post(request_url, verify=False, data=config, timeout=30)
         except requests.exceptions.ConnectTimeout:
-            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.")
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik Mosaic cluster.")
         except requests.exceptions.ConnectionError:
-            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.")
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik Mosaic cluster.")
         except requests.exceptions.ReadTimeout:
             raise RubrikConnectionException(
-                "The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.")
+                "The Rubrik Mosaic cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.")
         except requests.exceptions.RequestException as error:
             # If "error_message" has be defined raise an exception with that message else
             # raise an exception with the request exception error
@@ -151,7 +151,7 @@ class Connect(Reporting):
 
         Arguments:
 
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /login).
+            api_endpoint {str} -- The endpoint of the Rubrik Mosaic API to call (ex. /login).
         """
         # Validate the API Endpoint Syntax
         if not isinstance(api_endpoint, str):

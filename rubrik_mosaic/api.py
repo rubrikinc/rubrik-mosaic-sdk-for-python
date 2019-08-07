@@ -12,7 +12,7 @@
 # limitations under the License.
 
 """
-This module contains the Rubrik SDK API class.
+This module contains the Rubrik Mosaic SDK API class.
 """
 
 import requests
@@ -38,10 +38,10 @@ class Api():
 
         Arguments:
             call_type {str} -- The HTTP Method for the type of RESTful API call being made. (choices: {'GET', 'POST', 'TOKEN_GENERATE'.})
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /cluster/me).
+            api_endpoint {str} -- The endpoint of the Rubrik Mosaic API to call (ex. /login).
 
         Keyword Arguments:
-            params {dict} -- An optional dict containing variables in a key:value format to send with `GET` & `DELETE` API calls (default: {None})
+            params {dict} -- An optional dict containing variables in a key:value format to send with `GET` & `POST` API calls (default: {None})
             timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
 
         Returns:
@@ -87,12 +87,12 @@ class Api():
             except BaseException:
                 api_request.raise_for_status()
         except requests.exceptions.ConnectTimeout:
-            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.")
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik Mosaic cluster.")
         except requests.exceptions.ConnectionError:
-            raise RubrikConnectionException("Unable to establish a connection to the Rubrik cluster.")
+            raise RubrikConnectionException("Unable to establish a connection to the Rubrik Mosaic cluster.")
         except requests.exceptions.ReadTimeout:
             raise RubrikConnectionException(
-                "The Rubrik cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.")
+                "The Rubrik Mosaic cluster did not respond to the API request in the allotted amount of time. To fix this issue, increase the timeout value.")
         except requests.exceptions.RequestException as error:
             # If "error_message" has be defined raise an exception for that message else
             # raise an exception for the request exception error
@@ -109,14 +109,14 @@ class Api():
                 return {'status_code': api_request.status_code}
 
     def get(self, api_endpoint, timeout=15, params=None):
-        """Send a GET request to the provided Rubrik API endpoint.
+        """Send a GET request to the provided Rubrik Mosaic API endpoint.
 
         Arguments:
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /listjobs).
+            api_endpoint {str} -- The endpoint of the Rubrik Mosaic API to call (ex. /listjobs).
 
         Keyword Arguments:
             params {dict} -- An optional dict containing variables in a key:value format to send with `GET` & `DELETE` API calls (default: {None})
-            timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
+            timeout {int} -- The number of seconds to wait to establish a connection the Rubrik Mosaic cluster before returning a timeout error. (default: {15})
 
         Returns:
             dict -- The response body of the API call.
@@ -125,13 +125,13 @@ class Api():
         return self._common_api('GET', api_endpoint, config=None, timeout=timeout, params=params)
 
     def post(self, api_endpoint, config, timeout=15):
-        """Send a POST request to the provided Rubrik API endpoint.
+        """Send a POST request to the provided Rubrik Mosaic API endpoint.
 
         Arguments:
-            api_endpoint {str} -- The endpoint of the Rubrik CDM API to call (ex. /listjobs).
+            api_endpoint {str} -- The endpoint of the Rubrik Mosaic API to call (ex. /listjobs).
 
         Keyword Arguments:
-            timeout {int} -- The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error. (default: {15})
+            timeout {int} -- The number of seconds to wait to establish a connection the Rubrik Mosaic cluster before returning a timeout error. (default: {15})
 
         Returns:
             dict -- The response body of the API call.
