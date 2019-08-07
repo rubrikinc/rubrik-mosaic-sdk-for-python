@@ -1,12 +1,26 @@
-import rubrik_cdm
-rubrik = rubrik_cdm.Connect()
+import rubrik_mosaic
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-name = 'pythonsdkdemo'
-accessKey = 'AWS_ACCESS_KEY'
-secretKey = 'AWS_SECRET_KEY'
-regions = ['us-east-1']
-regional_bolt_network_configs = [{"region": "us-east-1", "vNetId": "vpc-a46e72c2",
-                                  "subnetId": "subnet-f0cc9695", "securityGroupId": "sg-66091b19"}]
+''' Following run from shell:
+export rubrik_mosaic_username=admin
+export rubrik_mosaic_password=MyPass123
+export rubrik_mosaic_node_ip=mosaic.demo.com
+'''
 
-nativeaccount = rubrik.add_aws_native_account(
-    name, accessKey, secretKey, regions, regional_bolt_network_configs)
+mosaic = rubrik_mosaic.Connect()
+mosaic.get_store_stats()
+''' Example return
+[
+    {
+        u'NFS_STORE': {
+            u'store_url': u'file://localhost/mnt/datosio_verstore/',
+            u'store_stats': {
+                u'store_size': u'9.2 GB'
+            },
+            u'store_type': u'vfs_store',
+            u'created_epoch': 1554157793
+        }
+    }
+]
+'''
