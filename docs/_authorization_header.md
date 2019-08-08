@@ -9,4 +9,4 @@ def _authorization_header()
 ## Returns
 | Type | Return Value                                                                                   |
 |------|-----------------------------------------------------------------------------------------------|
-| dict  | The authorization header that utilizes Basic authentication. |
+| dict  | The authorization header that utilizes token-based authentication. |

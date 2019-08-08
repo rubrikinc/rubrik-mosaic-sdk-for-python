@@ -1,21 +1,18 @@
 # post
 
-Send a POST request to the provided Rubrik API endpoint.
+Send a POST request to the provided Rubrik Mosaic API endpoint.
 ```py
-def post(api_version, api_endpoint, config, timeout=15, authentication=True)
+def post(api_endpoint, config, timeout=15)
 ```
 
 ## Arguments
 | Name        | Type | Description                                                                 | Choices |
 |-------------|------|-----------------------------------------------------------------------------|---------|
-| api_version  | str  | The version of the Rubrik CDM API to call.  |    v1, v2, internal     |
-| api_endpoint  | str  | The endpoint of the Rubrik CDM API to call (ex. /cluster/me). |         |
-| config  | dict  | The specified data to send with the API call. |         |
+| api_endpoint  | str  | The endpoint of the Rubrik Mosaic API to call (ex. /listjobs). |         |
 ## Keyword Arguments
 | Name        | Type | Description                                                                 | Choices | Default |
 |-------------|------|-----------------------------------------------------------------------------|---------|---------|
-| timeout  | int  | The number of seconds to wait to establish a connection the Rubrik cluster before returning a timeout error.  |         |    15     |
-| authentication  | bool  | Flag that specifies whether or not to utilize authentication when making the API call.  |         |    True     |
+| timeout  | int  | The number of seconds to wait to establish a connection the Rubrik Mosaic cluster before returning a timeout error.  |         |    15     |
 
 ## Returns
 | Type | Return Value                                                                                   |
@@ -23,17 +20,9 @@ def post(api_version, api_endpoint, config, timeout=15, authentication=True)
 | dict  | The response body of the API call. |
 ## Example
 ```py
-import rubrik_cdm
+import rubrik_mosaic
 
-rubrik = rubrik_cdm.Connect()
+mosaic = rubrik_mosaic.Connect()
 
-config = {}
-config['id'] = "pythonsdk"
-config['password'] = "RubrikGoForward"
-config['firstName'] = "Rubrik"
-config['lastName'] = "Ranger"
-config['emailAddress'] = "Rubrik.Ranger@pysdk.com"
-config['contactNumber'] = "555-555-5555"
-
-create_user = rubrik.post('internal', '/user', config)
+mosaic.post('/retrieve', '{}')
 ```
