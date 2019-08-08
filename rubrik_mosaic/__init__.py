@@ -1,4 +1,4 @@
-"rubrik: A Python package for interacting with the Rubrik CDM API."
+"rubrik: A Python package for interacting with the Rubrik Mosaic API."
 
 from .rubrik_mosaic import Connect
 
