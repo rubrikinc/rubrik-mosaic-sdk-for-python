@@ -16,4 +16,5 @@ import rubrik_mosaic
 
 mosaic = rubrik_mosaic.Connect()
 
-mosaic.get_policies()```
+mosaic.get_policies()
+```

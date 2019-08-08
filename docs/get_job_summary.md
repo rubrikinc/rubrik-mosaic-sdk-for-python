@@ -29,4 +29,5 @@ job_state should be one of:
   job_aborted
 '''
 
-mosaic.get_job_summary('job_successful',12)```
+mosaic.get_job_summary('job_successful',12)
+```
