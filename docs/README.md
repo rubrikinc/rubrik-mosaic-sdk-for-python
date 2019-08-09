@@ -4,36 +4,33 @@
 
 The SDK has been tested against Python 2.7.6 and Python 3.6.4.
 
-Install from pip:
-
-`pip install rubrik_cdm`
-
 Install from source:
+
+```bash
+git clone https://github.com/rubrik-devops/rubrik-mosaic-sdk-for-python
+cd rubrik-mosaic-sdk-for-python
+python setup.py install
 ```
-$ git clone https://github.com/rubrik-devops/rubrik-sdk-for-python
-$ cd rubrik-sdk-for-python
-$ python setup.py install
-``` 
 
 ## Configuration
 
-Before you begin to use the Rubrik Python SDK, you should first setup your authentication credentials. By default, the SDK will attempt to read the the Rubrik Cluster credentials from the following environment variables:
+Before you begin to use the Rubrik Mosaic Python SDK, you should first setup your authentication credentials. By default, the SDK will attempt to read the the Rubrik Mosaic Cluster credentials from the following environment variables:
 
-* `rubrik_cdm_node_ip`
-* `rubrik_cdm_username`
-* `rubrik_cdm_password`
+* `rubrik_mosaic_node_ip`
+* `rubrik_mosaic_username`
+* `rubrik_mosaic_password`
 
 ## Usage
 
-To use the SDK, you must first instantiate a new variable, in thise case `rubrik`, to connect to the Rubrik Cluster.
+To use the SDK, you must first instantiate a new variable, in thise case `mosaic`, to connect to the Rubrik Mosaic Cluster.
 
 ```py
-import rubrik_cdm
-rubrik = rubrik_cdm.Connect()
+import rubrik_mosaic
+mosaic = rubrik_mosaic.Connect()
 ```
 
 {% hint style="info" %}
-Note: You may use any variable name to connect to the Rubrik Cluster.
+Note: You may use any variable name to connect to the Rubrik Mosaic Cluster.
 {% endhint %}
 
 If you have not configured the correct environment variables you may also manually pass in the required authentication credentials.
@@ -43,11 +40,10 @@ import rubrik_cdm
 
 node_ip = "172.21.8.90"
 username = "sdk@rangers.lab"
-password = "RubrikPythonSDK"
+password = "RubrikMosaicPythonSDK"
 
-rubrik = rubrik_cdm.Connect(node_ip, username, password)
+mosaic = rubrik_mosaic.Connect(node_ip, username, password)
 ```
-
 
 ## Debug
 
@@ -58,34 +54,34 @@ To enable debuging set the `Connect()` `enable_logging` keyword argument to `Tru
 Script:
 
 ```py
-import rubrik_cdm
-rubrik = rubrik_cdm.Connect(enable_logging=True)
+import rubrik_mosaic
+mosaic = rubrik_mosaic.Connect(enable_logging=True)
 
-cluster_version = rubrik.cluster_version()
-print(cluster_version)
+store_stats = mosaic.get_store_stats()
+print(store_stats)
 ```
 
 Output:
 
-```
-[2018-08-08 09:18:59,687] [DEBUG] -- Node IP: 172.21.8.53
-[2018-08-08 09:18:59,687] [DEBUG] -- Username: demo
-[2018-08-08 09:18:59,687] [DEBUG] -- Password: *******
+```shell
+[2019-08-08 14:42:21,175] [DEBUG] -- Node IP: 172.21.8.53
+[2019-08-08 14:42:21,175] [DEBUG] -- Node Port: 9090
+[2019-08-08 14:42:21,175] [DEBUG] -- Username: demo
+[2019-08-08 14:42:21,175] [DEBUG] -- Password: *******
 
-[2018-08-08 09:19:00,062] [DEBUG] -- cluster_version: Getting the software version of the Rubrik Cluster.
-[2018-08-08 09:19:00,062] [DEBUG] -- GET https://172.21.8.54/api/v1/cluster/me/version
-[2018-08-08 09:19:00,443] [DEBUG] -- <Response [200]>
+[2019-08-08 14:43:11,846] [DEBUG] -- Generating API Token
+[2019-08-08 14:43:14,377] [DEBUG] -- API Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicGFzc3dvcmQiOiJhZG1pbiIsInByaW50LXByZXR0eSI6Im5vIiwiaWF0IjoxNTY1MjcxNzk0LCJleHAiOjE1Njc4NjM3OTR9.s2N71RFONZhQ1m0WvJTnGn_STBFSQP_ggxhooWpYGZ4
+[2019-08-08 14:43:14,377] [DEBUG] -- GET https://172.21.8.53:9090/datos/liststore
 
-4.1.2-2366
 ```
 
 ## Certificate Verification
 
-When connecting to a Rubrik cluster without certificate verification enabled (see the Rubrik CDM Security Guide for additional information) you will receive the following warning message:
+When connecting to a Rubrik Mosaic cluster without certificate verification enabled you will receive the following warning message:
 
-```
-/usr/local/lib/python3.6/site-packages/urllib3/connectionpool.py:857: InsecureRequestWarning: 
-Unverified HTTPS request is being made. Adding certificate verification is strongly advised. 
+```shell
+/usr/local/lib/python3.6/site-packages/urllib3/connectionpool.py:857: InsecureRequestWarning:
+Unverified HTTPS request is being made. Adding certificate verification is strongly advised.
 See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warningsInsecureRequestWarning)
 ```
 
