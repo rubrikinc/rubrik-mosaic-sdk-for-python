@@ -2,7 +2,7 @@
 
 ## :hammer: Installation
 
-`Install from source`
+Install from source:
 
 ```
 $ git clone https://github.com/rubrik-devops/rubrik-mosaic-sdk-for-python
@@ -20,7 +20,6 @@ _Note: the `virtualenv .` step is optional but recommended for development work.
 Here are some resources to get you started! If you find any challenges from this project are not properly documented or are unclear, please raise an issueand let us know! This is a fun, safe environment - don't worry if you're a GitHub newbie! :heart:
 
 * [Quick Start Guide](docs/quick-start.md)
-* [Rubrik API Documentation](https://github.com/rubrikinc/api-documentation)
 
 ## :muscle: How You Can Help
 
